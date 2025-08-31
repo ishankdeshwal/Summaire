@@ -17,7 +17,7 @@ export default function Header() {
       </div>
       <div className="flex lg:justify-center gap-4 lg:gap-12 lg:items-center ">
         <NavLink href="/#pricing">Pricing</NavLink>
-        <SignedIn> <NavLink href="/#dashboard">Your Summaries</NavLink></SignedIn>
+        <SignedIn> <NavLink href="/dashboard">Your Summaries</NavLink></SignedIn>
       </div>
       <div className="flex lg:justify-end lg:flex-1 gap-2 lg:gap-4">
        <SignedIn>

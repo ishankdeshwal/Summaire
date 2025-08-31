@@ -3,8 +3,9 @@ import z from "zod";
 import UploadFormInput from "./UploadFormInput";
 import { useUploadThing } from "@/utils/uploadthing";
 import { toast } from "sonner";
-import { useRef } from "react";
-import { generatePDFSummary } from "@/actions/UploadActions";
+import { useRef, useTransition } from "react";
+import { generatePDFSummary, storePdfSummaryAction } from "@/actions/UploadActions";
+import { useRouter } from "next/navigation";
 const schema = z.object({
   file: z
     .instanceof(File, { message: "Invalid file" })
@@ -20,12 +21,11 @@ const schema = z.object({
 
 export default function UploadForm() {
   const uploadToastId = useRef<string | number | undefined>(undefined);
-
+  const router = useRouter()
   const { startUpload } = useUploadThing('pdfUploader', {
     onClientUploadComplete: () => {
       console.log('Uploaded Successfully');
-      toast.success("Upload successful ✅", { id: uploadToastId.current });
-      uploadToastId.current = undefined;
+      // Don't show success toast here - we'll handle it after PDF processing
     },
     onUploadError: (err) => {
       console.error('Error Occured', err);
@@ -38,8 +38,8 @@ export default function UploadForm() {
   })
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("submitted");
-    const formData = new FormData(e.currentTarget);
+    const formEl = e.currentTarget;
+    const formData = new FormData(formEl);
     const file = formData.get("file") as File;
     // Validation of file
     const validatedFields = schema.safeParse({ file });
@@ -51,13 +51,51 @@ export default function UploadForm() {
     }
     // show a persistent processing toast and start the upload
     uploadToastId.current = toast.loading('Processing PDF…. ✨', { duration: Infinity });
-    await startUpload([file]);
+    const res = await startUpload([file]);
+    if (!res || res.length === 0) {
+      toast.error("Upload failed, please try again ❌", { id: uploadToastId.current });
+      uploadToastId.current = undefined;
+      return;
+    }
+    const uploadedFile = res[0];
+    const fileUrl = uploadedFile.url;
+
     // success/error toasts are handled in callbacks above using the same toast id
-    // parsr the pdf to langChain
-    const summary=await generatePDFSummary(res);
-    
+    // parse the pdf to langChain
+    const summaryResult = await generatePDFSummary([uploadedFile]);
+    console.log(summaryResult);
+    const { data = null, message = null } = summaryResult || {}
     // summarise the PDF using AI
+
+    if (!summaryResult.success) {
+      toast.error(summaryResult.message, { id: uploadToastId.current });
+      uploadToastId.current = undefined;
+      return;
+    }
+
+    console.log("PDF text extracted:", summaryResult.data?.text?.substring(0, 200) + "...");
+    toast.success("PDF processed successfully! ✅", {
+      id: uploadToastId.current,
+      duration: 4000 // Toast will disappear after 4 seconds
+    });
+    uploadToastId.current = undefined;
     // save the summary to DB
+    if (data?.summary) {
+      const storeResults = await storePdfSummaryAction({
+        fileUrl,
+        summary: data.summary,
+        title: data.fileName,
+        fileName: data.fileName,
+      });
+
+      if (storeResults.success && storeResults.data?.id) {
+        toast.success('Your PDF has been successfully summarized and saved!✨😊');
+        formEl.reset();
+        router.push(`/summaries/${storeResults.data.id}`);
+      } else {
+        toast.error(storeResults.message || 'Failed to save summary');
+      }
+    }
     // redirect to [id] summary Page
   };
   return (
