@@ -17,7 +17,7 @@ export async function handleCheckoutSessionCompleted({
     const sql = await GetDbConnection();
 
     await createOrUpdateUser({
-      sql,
+      sql: sql as any,
       email: email as string,
       fullName: name as string,
       customerId,
@@ -26,7 +26,7 @@ export async function handleCheckoutSessionCompleted({
     });
     try {
       await createPayment({
-        sql,
+        sql: sql as any,
         session,
         priceId: priceId as string,
         userEmail: email as string,
@@ -56,7 +56,7 @@ export async function createOrUpdateUser({
 }) {
   try {
     const user = await sql`SELECT * FROM users WHERE email=${email}`;
-    if (user.length === 0) {
+    if (Array.isArray(user) && user.length === 0) {
       // Create new user
       await sql`INSERT INTO users (email,full_name,customer_id,price_id,status) VALUES (${email},${fullName},${customerId},${priceId},${status})`;
     } else {
@@ -108,7 +108,7 @@ export async function handlePaymentIntentSucceeded({
 
     // Create or update user
     await createOrUpdateUser({
-      sql,
+      sql: sql as any,
       email: customer.email,
       fullName: customer.name || "",
       customerId,
@@ -119,7 +119,7 @@ export async function handlePaymentIntentSucceeded({
     // Create payment record
     try {
       await createPaymentFromIntent({
-        sql,
+        sql: sql as any,
         paymentIntent,
         priceId,
         userEmail: customer.email,

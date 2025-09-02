@@ -71,7 +71,7 @@ export const POST = async (req: NextRequest) => {
 
             if (priceId) {
               await createOrUpdateUser({
-                sql,
+                sql: sql as any,
                 email: customer.email,
                 fullName: customer.name || "",
                 customerId,
