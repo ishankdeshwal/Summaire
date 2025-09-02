@@ -4,6 +4,8 @@ import { SummaryViewer } from "@/components/summaries/SummaryViewer";
 import { GetSummaryById } from "@/lib/summaries";
 import { FileText } from "lucide-react";
 import { notFound } from "next/navigation";
+import { MotionDiv, MotionSection } from "@/components/common/motion-wrapper";
+import { containerVariants, itemVariant } from "@/lib/constants";
 
 export default async function SummaryPage({
   params,
@@ -20,8 +22,8 @@ export default async function SummaryPage({
     notFound();
   }
 
-  const { title, summary_text, file_name, word_count,created_at,original_file_url} = summary;
-  const reading_time=Math.ceil((word_count ||0)/150)
+  const { title, summary_text, file_name, word_count, created_at, original_file_url } = summary;
+  const reading_time = Math.ceil((word_count || 0) / 150)
   return (
     <div className="relative isolate min-h-screen bg-gradient-to-b from-rose-50/40 to-white">
       <div
@@ -38,12 +40,18 @@ export default async function SummaryPage({
       </div>
 
       <div className="container mx-auto flex flex-col items-center px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
-        <div className="w-full max-w-4xl flex flex-col gap-6">
-          <SummaryHeader title={title} createdAt={created_at} readingTime={reading_time} />
+        <MotionSection variants={containerVariants} initial="hidden" animate="visible" className="w-full max-w-4xl flex flex-col gap-6">
+          <MotionDiv variants={itemVariant}>
+            <SummaryHeader title={title} createdAt={created_at} readingTime={reading_time} />
+          </MotionDiv>
 
-          {file_name && <SourceInfo title={title} file_name={file_name} created_at={created_at} original_file_url={original_file_url} summary_text={summary_text}  />}
+          {file_name && (
+            <MotionDiv variants={itemVariant}>
+              <SourceInfo title={title} file_name={file_name} created_at={created_at} original_file_url={original_file_url} summary_text={summary_text} />
+            </MotionDiv>
+          )}
 
-          <div className="relative">
+          <MotionDiv variants={itemVariant} className="relative">
             <div className="relative p-6 sm:p-8 lg:p-10 bg-white/80 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-xl border border-rose-100/30 transition-all duration-300 hover:shadow-2xl hover:bg-white/90">
               <div className="absolute inset-0 bg-gradient-to-br from-rose-50/40 via-orange-50/30 to-transparent opacity-40 rounded-2xl sm:rounded-3xl" />
 
@@ -56,8 +64,8 @@ export default async function SummaryPage({
                 <SummaryViewer summary_text={summary_text} />
               </div>
             </div>
-          </div>
-        </div>
+          </MotionDiv>
+        </MotionSection>
       </div>
     </div>
   );

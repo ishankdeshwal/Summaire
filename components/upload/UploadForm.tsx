@@ -3,9 +3,10 @@ import z from "zod";
 import UploadFormInput from "./UploadFormInput";
 import { useUploadThing } from "@/utils/uploadthing";
 import { toast } from "sonner";
-import { useRef, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { generatePDFSummary, storePdfSummaryAction } from "@/actions/UploadActions";
 import { useRouter } from "next/navigation";
+import LoadingSkeleton from "./LoadingSkeleton";
 const schema = z.object({
   file: z
     .instanceof(File, { message: "Invalid file" })
@@ -22,6 +23,7 @@ const schema = z.object({
 export default function UploadForm() {
   const uploadToastId = useRef<string | number | undefined>(undefined);
   const router = useRouter()
+  const [isProcessing, setIsProcessing] = useState(false)
   const { startUpload } = useUploadThing('pdfUploader', {
     onClientUploadComplete: () => {
       console.log('Uploaded Successfully');
@@ -31,9 +33,11 @@ export default function UploadForm() {
       console.error('Error Occured', err);
       toast.error('Upload failed, please try again ❌', { id: uploadToastId.current });
       uploadToastId.current = undefined;
+      setIsProcessing(false)
     },
     onUploadBegin: (file) => {
       console.log('upload has begun for', file);
+      setIsProcessing(true)
     }
   })
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -55,6 +59,7 @@ export default function UploadForm() {
     if (!res || res.length === 0) {
       toast.error("Upload failed, please try again ❌", { id: uploadToastId.current });
       uploadToastId.current = undefined;
+      setIsProcessing(false)
       return;
     }
     const uploadedFile = res[0];
@@ -70,6 +75,7 @@ export default function UploadForm() {
     if (!summaryResult.success) {
       toast.error(summaryResult.message, { id: uploadToastId.current });
       uploadToastId.current = undefined;
+      setIsProcessing(false)
       return;
     }
 
@@ -97,10 +103,15 @@ export default function UploadForm() {
       }
     }
     // redirect to [id] summary Page
+    setIsProcessing(false)
   };
   return (
-    <div className="flex flex-col gap-8 w-full max-w-2xl mx-auto">
-      <UploadFormInput onSubmit={handleSubmit} />
-    </div>
+    <>
+      <div className="flex flex-col gap-8 w-full max-w-2xl mx-auto">
+        <UploadFormInput onSubmit={handleSubmit} disabled={isProcessing} />
+      </div>
+      {isProcessing && <LoadingSkeleton />}
+    </>
+
   );
 }

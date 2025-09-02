@@ -2,14 +2,28 @@ import { FileText, Github, Twitter, Mail, ArrowRight } from "lucide-react";
 import NavLink from "./navLink";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { currentUser } from "@clerk/nextjs/server";
+import { hasActivePlan, hasReachedUploadLimit } from "@/lib/user";
+import { MotionDiv, MotionSection } from "./motion-wrapper";
+import { containerVariants, itemVariant } from "@/lib/constants";
 
-export default function Footer() {
+export default async function Footer() {
     const year = new Date().getFullYear();
+    const user = await currentUser();
+    // Do NOT redirect from a global footer; handle guests gracefully
+    const userId = user?.id || null;
+    let hasReachedLimit = false;
+    let hasActiveSubscription = false;
+    if (userId) {
+        const uploadInfo = await hasReachedUploadLimit(userId);
+        hasReachedLimit = uploadInfo.hasReachedLimit;
+        hasActiveSubscription = await hasActivePlan(user!.emailAddresses[0].emailAddress);
+    }
     return (
         <footer className="border-t bg-gradient-to-b from-white to-rose-50/60">
             <div className="container mx-auto px-2 lg:px-8">
                 <div className="relative isolate -mt-6 translate-y-6">
-                    <div className="rounded-2xl border bg-white/80 backdrop-blur-md shadow-sm ring-1 ring-gray-200 overflow-hidden">
+                    <MotionDiv variants={itemVariant} initial="hidden" whileInView="visible" viewport={{ once: true }} className="rounded-2xl border bg-white/80 backdrop-blur-md shadow-sm ring-1 ring-gray-200 overflow-hidden">
                         <div className="absolute inset-0 bg-[radial-gradient(40rem_12rem_at_120%_-10%,rgba(244,63,94,0.12),transparent),radial-gradient(30rem_10rem_at_-10%_120%,rgba(14,165,233,0.12),transparent)]" />
                         <div className="relative px-4 sm:px-8 py-8 md:py-10 flex flex-col md:flex-row items-center md:items-stretch gap-6">
                             <div className="flex-1">
@@ -24,24 +38,26 @@ export default function Footer() {
                                     Try Sommaire free. No credit card required.
                                 </p>
                             </div>
-                            <div className="flex flex-col sm:flex-row items-stretch gap-3 w-full md:w-auto">
-                                <Link href="/upload">
-                                    <Button className="w-full sm:w-auto inline-flex items-center gap-2">
-                                        Start summarizing
-                                        <ArrowRight className="w-4 h-4" />
-                                    </Button>
-                                </Link>
-                                <Link href="/#pricing" className="w-full sm:w-auto">
-                                    <Button variant="outline" className="w-full sm:w-auto">See pricing</Button>
-                                </Link>
-                            </div>
+                            {!hasReachedLimit && hasActiveSubscription && (
+                                <div className="flex flex-col sm:flex-row items-stretch gap-3 w-full md:w-auto">
+                                    <Link href="/upload">
+                                        <Button className="w-full sm:w-auto inline-flex items-center gap-2">
+                                            Start summarizing
+                                            <ArrowRight className="w-4 h-4" />
+                                        </Button>
+                                    </Link>
+                                    <Link href="/#pricing" className="w-full sm:w-auto">
+                                        <Button variant="outline" className="w-full sm:w-auto">See pricing</Button>
+                                    </Link>
+                                </div>
+                            )}
                         </div>
-                    </div>
+                    </MotionDiv>
                 </div>
 
-                <div className="py-14 md:py-16">
+                <MotionSection variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="py-14 md:py-16">
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
-                        <div className="col-span-2 md:col-span-2 flex flex-col gap-4">
+                        <MotionDiv variants={itemVariant} className="col-span-2 md:col-span-2 flex flex-col gap-4">
                             <Link href="/" className="flex items-center gap-2">
                                 <FileText className="w-6 h-6 text-gray-900" />
                                 <span className="font-extrabold text-gray-900 text-lg">Sommaire</span>
@@ -49,7 +65,7 @@ export default function Footer() {
                             <p className="text-sm text-gray-600 max-w-sm">
                                 Summarize PDFs and documents instantly with clean, readable outputs.
                             </p>
-                            <form
+                            {/* <form
                                 action="#"
                                 className="mt-2 flex items-center gap-2"
                             >
@@ -63,32 +79,32 @@ export default function Footer() {
                                 <Button type="submit" variant="secondary" className="shrink-0">
                                     Subscribe
                                 </Button>
-                            </form>
-                        </div>
+                            </form> */}
+                        </MotionDiv>
 
-                        <div className="flex flex-col gap-3">
+                        <MotionDiv variants={itemVariant} className="flex flex-col gap-3">
                             <span className="text-sm font-semibold text-gray-900">Product</span>
                             <NavLink href="/upload">Upload</NavLink>
                             <NavLink href="/#pricing">Pricing</NavLink>
-                          
-                        </div>
 
-                        <div className="flex flex-col gap-3">
+                        </MotionDiv>
+
+                        <MotionDiv variants={itemVariant} className="flex flex-col gap-3">
                             <span className="text-sm font-semibold text-gray-900">Company</span>
-                            <NavLink href="/">About</NavLink>
-                            
-                            <NavLink href="/">Contact</NavLink>
-                        </div>
+                            <NavLink href="/#HowItWorks">About</NavLink>
 
-                        <div className="flex flex-col gap-3">
+                            <NavLink href="mailto:deshwalishank@gmail.com">Contact</NavLink>
+                        </MotionDiv>
+
+                        <MotionDiv variants={itemVariant} className="flex flex-col gap-3">
                             <span className="text-sm font-semibold text-gray-900">Resources</span>
-                            <NavLink href="/">Guides</NavLink>
+                            <NavLink href="/#Demo">Guides</NavLink>
                             <NavLink href="/">Help Center</NavLink>
-                            
-                        </div>
+
+                        </MotionDiv>
                     </div>
 
-                    <div className="mt-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <MotionDiv variants={itemVariant} className="mt-10 flex flex-col md:flex-row items-center justify-between gap-6">
                         <div className="flex items-center gap-3">
                             <Link
                                 href="https://github.com/"
@@ -111,8 +127,8 @@ export default function Footer() {
                         <div className="text-xs text-gray-500">
                             <p>© {year} Sommaire. All rights reserved.</p>
                         </div>
-                    </div>
-                </div>
+                    </MotionDiv>
+                </MotionSection>
             </div>
         </footer>
     );

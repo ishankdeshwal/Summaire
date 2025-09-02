@@ -1,5 +1,7 @@
 import { BrainCircuit, FileOutput, FileText, MoveRight } from "lucide-react";
 import { ReactNode } from "react";
+import { MotionSection, MotionDiv } from "@/components/common/motion-wrapper";
+import { containerVariants, itemVariant } from "@/lib/constants";
 
 type Step = {
   icon: ReactNode;
@@ -27,7 +29,7 @@ const steps: Step[] = [
 ];
 export default function HowItWorks() {
   return (
-    <section className="relative overflow-hidden bg-gray-50">
+    <MotionSection id="HowItWorks" variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="relative overflow-hidden bg-gray-50">
       <div className="py-12 lg:py-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 lg:pt-12">
         <div
           aria-hidden="true"
@@ -43,7 +45,7 @@ export default function HowItWorks() {
             }}
           />
         </div>
-        <div className="text-center mb-16 ">
+        <MotionDiv variants={itemVariant} className="text-center mb-16 ">
           <h2 className="font-bold text-xl uppercase mb-4 text-rose-500">
             HOW IT WORKS
           </h2>
@@ -51,12 +53,12 @@ export default function HowItWorks() {
             Transform any PDF into an easy-to-digest summary in three simmple
             steps
           </h3>
-        </div>
+        </MotionDiv>
         <div className="grid grid-cols-1 md:grid-cols-3  gap-8 max-w-6xl mx-auto relative ">
           {steps.map((step, idx) => (
-            <div className="relative flex items-stretch" key={idx}>
+            <MotionDiv variants={itemVariant} className="relative flex items-stretch" key={idx}>
               <StepItem  {...step} />
-              {idx < steps.length-1 && (
+              {idx < steps.length - 1 && (
                 <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
                   <MoveRight
                     size={32}
@@ -65,11 +67,11 @@ export default function HowItWorks() {
                   />
                 </div>
               )}
-            </div>
+            </MotionDiv>
           ))}
         </div>
       </div>
-    </section>
+    </MotionSection>
   );
 }
 

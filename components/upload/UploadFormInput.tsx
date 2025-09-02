@@ -5,8 +5,9 @@ import { useTransition } from "react";
 import { Loader2 } from "lucide-react";
 interface UploadFromInputProps {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  disabled?: boolean;
 }
-export default function UploadFormInput({ onSubmit }: UploadFromInputProps) {
+export default function UploadFormInput({ onSubmit, disabled = false }: UploadFromInputProps) {
   const [isPending, startTransition] = useTransition();
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,11 +26,11 @@ export default function UploadFormInput({ onSubmit }: UploadFromInputProps) {
           accept="application/pdf"
           required
           className=""
-          disabled={isPending}
+          disabled={isPending || disabled}
         />
         <Button
           type="submit"
-          disabled={isPending}
+          disabled={isPending || disabled}
           className={`transition-colors ${isPending ? "opacity-70 cursor-not-allowed" : ""
             }`}
         >
