@@ -27,7 +27,8 @@ export async function generatePDFSummary(
       file: string;
     };
     name: string;
-    url: string;
+    url?: string; // deprecated by uploadthing v9
+    ufsUrl?: string; // preferred public URL
   }[]
 ) {
   if (!uploadResponse) {
@@ -41,9 +42,10 @@ export async function generatePDFSummary(
     serverData: { userId, file: pdfUrl },
     name: fileName,
     url,
+    ufsUrl,
   } = uploadResponse[0];
 
-  if (!pdfUrl && !url) {
+  if (!pdfUrl && !ufsUrl && !url) {
     return {
       success: false,
       message: "File Upload Failed",
@@ -52,7 +54,7 @@ export async function generatePDFSummary(
   }
   try {
     // Use the URL from the uploadRespons
-    const fileUrl = pdfUrl || url;
+    const fileUrl = pdfUrl || ufsUrl || url!;
     const pdfText = await fetchAndExtractText(fileUrl);
     console.log({ pdfText });
     const summary = await generateSummary(pdfText);
