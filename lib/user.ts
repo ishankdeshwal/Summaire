@@ -13,11 +13,15 @@ export async function hasActivePlan(email: string) {
     const query = await sql`SELECT price_id,status FROM users where email=${email} AND status ='active' AND price_id IS NOT NULL`
     return query && query.length > 0
 }
-export async function hasReachedUploadLimit(userId: string) {
+export async function hasReachedUploadLimit(userId: string, userEmail?: string) {
     const uploadCount = await getUserUploadCount(userId)
-    const priceId = await getPriceIdForActiveUser(userId);
+    let priceId: string | null = null
+    if (userEmail) {
+        priceId = await getPriceIdForActiveUser(userEmail);
+    }
     const isPro = pricingPlans.find((plan) => plan.priceId === priceId)?.id === 'pro'
-    const uploadLimit: number = isPro ? 1000 : 5
+    const hasAnyPlan = Boolean(priceId)
+    const uploadLimit: number = isPro ? 1000 : hasAnyPlan ? 5 : 1
     return { hasReachedLimit: uploadCount >= uploadLimit, uploadLimit }
 }
 export async function getSubscriptionStatus(user: User) {

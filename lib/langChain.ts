@@ -1,10 +1,14 @@
-// @ts-expect-error no types available for pdf-parse
-import pdf from "pdf-parse";
+import * as pdfjsLib from "pdfjs-dist";
 
 export async function fetchAndExtractText(fileUrl: string) {
     const response = await fetch(fileUrl);
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const parsed = await pdf(buffer);
-    return parsed.text || "";
+    const data = new Uint8Array(await response.arrayBuffer());
+    const pdf = await pdfjsLib.getDocument({ data }).promise;
+    let text = "";
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        text += (content.items as any[]).map((it: any) => it.str || "").join(" ") + "\n";
+    }
+    return text;
 }

@@ -1,4 +1,5 @@
 "use server";
+export const runtime = 'nodejs';
 
 import { GetDbConnection } from "@/lib/db";
 import { generateSummary } from "@/lib/GeminiAi";
@@ -109,18 +110,18 @@ VALUES (
     throw error;
   }
 }
-export async function getPdfText({fileUrl,fileName}:{
-  fileUrl:string;
-  fileName:string
-}){
-  if(!fileUrl){
-    return{
-      success:false,
-      message:'File Upload failed',
-      data:null
+export async function getPdfText({ fileUrl, fileName }: {
+  fileUrl: string;
+  fileName: string
+}) {
+  if (!fileUrl) {
+    return {
+      success: false,
+      message: 'File Upload failed',
+      data: null
     }
   }
-  
+
 }
 export async function storePdfSummaryAction({
   fileUrl,
