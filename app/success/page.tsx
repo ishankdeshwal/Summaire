@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle } from "lucide-react";
+import Link from "next/link";
 
 function SuccessContent() {
     const searchParams = useSearchParams();
@@ -39,18 +40,18 @@ function SuccessContent() {
                     Thank you for your purchase. Your subscription is now active and you can start using our PDF summarization service.
                 </p>
                 <div className="space-y-3">
-                    <a
+                    <Link
                         href="/"
                         className="block w-full bg-rose-500 text-white py-2 px-4 rounded-lg hover:bg-rose-600 transition-colors"
                     >
                         Go to Dashboard
-                    </a>
-                    <a
+                    </Link>
+                    <Link
                         href="/pricing"
                         className="block w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                         View Plans
-                    </a>
+                    </Link>
                 </div>
                 {sessionId && (
                     <p className="text-xs text-gray-500 mt-4">

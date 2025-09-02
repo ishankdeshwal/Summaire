@@ -70,7 +70,7 @@ export default async function DashboardPage() {
           <MotionDiv variants={itemVariant} className="mb-6 px-2">
             <div className="bg-rose-100 border border-rose-200 rounded-lg p-4 text-rose-700">
               <p className="text-sm">
-                You've reached the limit of {uploadLimit} uploads on the {planType === 'free' ? 'free' : planType} plan.
+                You&apos;ve reached the limit of {uploadLimit} uploads on the {planType === 'free' ? 'free' : planType} plan.
                 <Link
                   href="/#pricing"
                   className="text-rose-800 underline font-medium underline-offset-4 inline-flex items-center"

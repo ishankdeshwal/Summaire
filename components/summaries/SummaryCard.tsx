@@ -3,7 +3,7 @@ import { Card } from "../ui/card";
 import DeleteButton from "./DeleteButton";
 import { FileIcon, FileText } from "lucide-react";
 import { cn, formatFileName } from "@/lib/utils";
-import {formatDistanceToNow} from 'date-fns'
+import { formatDistanceToNow } from 'date-fns'
 const Summaryheader = ({
   fileUrl,
   title,
@@ -20,7 +20,7 @@ const Summaryheader = ({
         <h3 className="text-base xl:text-lg font-semibold text-gray-900 truncate">
           {title || formatFileName(fileUrl)}
         </h3>
-        <p className="text-sm text-gray-500">{formatDistanceToNow(new Date(createdAt),{addSuffix:true})}</p>
+        <p className="text-sm text-gray-500">{formatDistanceToNow(new Date(createdAt), { addSuffix: true })}</p>
       </div>
     </div>
   );
@@ -30,7 +30,7 @@ const StatusBadge = ({ status }: { status: string }) => {
     {status}
   </span>
 }
-export default function SummaryCard({ summary }: { summary: any }) {
+export default function SummaryCard({ summary }: { summary: Record<string, any> }) {
   return (
     <div>
       <Card className="relative h-full px-5 py-2 sm:py-6 gap-4">

@@ -81,12 +81,12 @@ export default function CurrentPlanStatus() {
             </Badge>
             {remainingUploads <= 2 && remainingUploads > 0 && (
                 <p className="text-sm text-yellow-600 mt-2">
-                    ⚠️ You're close to your upload limit. Consider upgrading for more uploads.
+                    ⚠️ You&apos;re close to your upload limit. Consider upgrading for more uploads.
                 </p>
             )}
             {remainingUploads === 0 && (
                 <p className="text-sm text-red-600 mt-2">
-                    🚫 You've reached your upload limit. Upgrade your plan to continue.
+                    🚫 You&apos;ve reached your upload limit. Upgrade your plan to continue.
                 </p>
             )}
         </div>

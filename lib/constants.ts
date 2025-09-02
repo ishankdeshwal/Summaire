@@ -7,7 +7,7 @@ export const pricingPlans = [
     price: 0,
     description: "Get started with AI summaries",
     items: [
-      "1 PDF summary per month",
+      "3 PDF summary per month",
       "Standard processing speed",
       "Basic AI summaries",
       "Community support",

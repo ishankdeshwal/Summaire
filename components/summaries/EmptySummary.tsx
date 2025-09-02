@@ -14,7 +14,7 @@ export default function EmptyPage() {
         No Summaries Found
       </h1>
       <p className="text-gray-500 mt-2 max-w-md">
-        You haven't generated any summaries yet. Start by uploading a file or
+        You haven&apos;t generated any summaries yet. Start by uploading a file or
         creating a new summary to see it here.
       </p>
 

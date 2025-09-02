@@ -47,7 +47,7 @@ export async function createOrUpdateUser({
   priceId,
   status,
 }: {
-  sql: any;
+  sql: ReturnType<typeof import("@neondatabase/serverless").neon>;
   email: string;
   fullName: string;
   customerId: string;
@@ -141,7 +141,7 @@ export async function createPayment({
   priceId,
   userEmail,
 }: {
-  sql: any;
+  sql: ReturnType<typeof import("@neondatabase/serverless").neon>;
   session: Stripe.Checkout.Session;
   priceId: string;
   userEmail: string;
@@ -180,7 +180,7 @@ export async function createPaymentFromIntent({
   priceId,
   userEmail,
 }: {
-  sql: any;
+  sql: ReturnType<typeof import("@neondatabase/serverless").neon>;
   paymentIntent: Stripe.PaymentIntent;
   priceId: string;
   userEmail: string;

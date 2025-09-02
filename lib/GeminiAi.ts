@@ -32,8 +32,8 @@ with contextually relevant emojis and proper markdown formatting:\n\n${pdfText}`
       throw new Error('EMPTY RESPONSE FROM GEMINI API')
     }
     return response.text();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("GEMINI API ERROR:", error);
-    throw new Error(`Failed to generate summary: ${error.message || 'Unknown error'}`);
+    throw new Error(`Failed to generate summary: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };

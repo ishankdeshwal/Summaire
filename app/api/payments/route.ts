@@ -67,7 +67,7 @@ export const POST = async (req: NextRequest) => {
               expand: ['lines.data.price']
             });
 
-            const priceId = (invoiceWithItems.lines.data[0] as any)?.price?.id;
+            const priceId = (invoiceWithItems.lines.data[0] as { price?: { id: string } })?.price?.id;
 
             if (priceId) {
               await createOrUpdateUser({

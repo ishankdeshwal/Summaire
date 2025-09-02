@@ -51,11 +51,11 @@ export default async function Page() {
                   </div>
 
                   <h2 className="text-2xl font-semibold text-gray-900 mb-3">
-                    You've reached your upload limit
+                    You&apos;ve reached your upload limit
                   </h2>
 
                   <p className="text-gray-600 mb-6">
-                    You've used all {uploadLimit} uploads on your {planType === 'free' ? 'free' : planType} plan.
+                    You&apos;ve used all {uploadLimit} uploads on your {planType === 'free' ? 'free' : planType} plan.
                     Upgrade to continue uploading and summarizing PDFs.
                   </p>
 
