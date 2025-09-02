@@ -30,7 +30,7 @@ const StatusBadge = ({ status }: { status: string }) => {
     {status}
   </span>
 }
-export default function SummaryCard({ summary }: { summary: Record<string, any> }) {
+export default function SummaryCard({ summary }: { summary: Record<string, unknown> }) {
   return (
     <div>
       <Card className="relative h-full px-5 py-2 sm:py-6 gap-4">

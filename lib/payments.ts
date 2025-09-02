@@ -17,7 +17,7 @@ export async function handleCheckoutSessionCompleted({
     const sql = await GetDbConnection();
 
     await createOrUpdateUser({
-      sql: sql as any,
+      sql,
       email: email as string,
       fullName: name as string,
       customerId,
@@ -26,7 +26,7 @@ export async function handleCheckoutSessionCompleted({
     });
     try {
       await createPayment({
-        sql: sql as any,
+        sql,
         session,
         priceId: priceId as string,
         userEmail: email as string,
@@ -108,7 +108,7 @@ export async function handlePaymentIntentSucceeded({
 
     // Create or update user
     await createOrUpdateUser({
-      sql: sql as any,
+      sql,
       email: customer.email,
       fullName: customer.name || "",
       customerId,
@@ -119,7 +119,7 @@ export async function handlePaymentIntentSucceeded({
     // Create payment record
     try {
       await createPaymentFromIntent({
-        sql: sql as any,
+        sql,
         paymentIntent,
         priceId,
         userEmail: customer.email,
