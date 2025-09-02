@@ -47,7 +47,7 @@ export async function createOrUpdateUser({
   priceId,
   status,
 }: {
-  sql: any;
+  sql: ReturnType<typeof import("@neondatabase/serverless").neon>;
   email: string;
   fullName: string;
   customerId: string;
@@ -56,7 +56,7 @@ export async function createOrUpdateUser({
 }) {
   try {
     const user = await sql`SELECT * FROM users WHERE email=${email}`;
-    if (Array.isArray(user) && user.length === 0) {
+    if (user.length === 0) {
       // Create new user
       await sql`INSERT INTO users (email,full_name,customer_id,price_id,status) VALUES (${email},${fullName},${customerId},${priceId},${status})`;
     } else {
@@ -141,7 +141,7 @@ export async function createPayment({
   priceId,
   userEmail,
 }: {
-  sql: any;
+  sql: ReturnType<typeof import("@neondatabase/serverless").neon>;
   session: Stripe.Checkout.Session;
   priceId: string;
   userEmail: string;
@@ -180,7 +180,7 @@ export async function createPaymentFromIntent({
   priceId,
   userEmail,
 }: {
-  sql: any;
+  sql: ReturnType<typeof import("@neondatabase/serverless").neon>;
   paymentIntent: Stripe.PaymentIntent;
   priceId: string;
   userEmail: string;
