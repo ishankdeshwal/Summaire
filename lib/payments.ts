@@ -213,21 +213,17 @@ export async function createPaymentFromIntent({
   }
 }
 
-export async function handleSubscriptionDeleted({
-  subscriptionId,
-  stripe
-}: {
-  subscriptionId: string;
-  stripe: Stripe
-}) {
-  console.log('Subscription deleted', subscriptionId);
+export async function handleSubscriptionDeleted({ subscriptionId, stripe }: { subscriptionId: string, stripe: Stripe }) {
   try {
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-    const sql = await GetDbConnection()
-    await sql`UPDATE users SET status='cancelled' WHERE customer_id=${subscription.customer}`
-    console.log('Subscription cancelled successfully',);
+    const customerId = subscription.customer as string;
+
+    // Update user status to inactive
+    const sql = await GetDbConnection();
+    await sql`UPDATE users SET status = 'inactive' WHERE customer_id = ${customerId}`;
+
+    return { success: true };
   } catch (error) {
-    console.error('error handling subscription deleted', error);
-    throw error
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }

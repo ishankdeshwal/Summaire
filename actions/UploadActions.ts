@@ -55,8 +55,17 @@ export async function generatePDFSummary(
   try {
     // Use the URL from the uploadRespons
     const fileUrl = pdfUrl || ufsUrl || url!;
+
+    if (!fileUrl) {
+      console.error("No valid file URL found");
+      return {
+        success: false,
+        message: "No valid file URL provided",
+        data: null,
+      };
+    }
+
     const pdfText = await fetchAndExtractText(fileUrl);
-    console.log({ pdfText });
     const summary = await generateSummary(pdfText);
     if (!summary) {
       return {
@@ -65,7 +74,6 @@ export async function generatePDFSummary(
         data: null,
       };
     }
-    console.log("Summary of this pdf is ", summary);
     // Return the extracted text for now
     return {
       success: true,
@@ -82,7 +90,7 @@ export async function generatePDFSummary(
     console.error("Error processing PDF:", error);
     return {
       success: false,
-      message: "Failed to process PDF",
+      message: `Failed to process PDF: ${error instanceof Error ? error.message : 'Unknown error'}`,
       data: null,
     };
   }
@@ -171,4 +179,21 @@ export async function storePdfSummaryAction({
       id: savedSummary.id
     }
   };
+}
+
+export async function generateAISummaryAction(pdfText: string) {
+  try {
+    const { generateSummary } = await import("@/lib/GeminiAi");
+    const summary = await generateSummary(pdfText);
+    return {
+      success: true,
+      summary,
+    };
+  } catch (error) {
+    console.error("Error generating AI summary:", error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to generate summary",
+    };
+  }
 }

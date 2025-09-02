@@ -4,9 +4,11 @@ import UploadFormInput from "./UploadFormInput";
 import { useUploadThing } from "@/utils/uploadthing";
 import { toast } from "sonner";
 import { useRef, useState, useTransition } from "react";
-import { generatePDFSummary, storePdfSummaryAction } from "@/actions/UploadActions";
+
+import { storePdfSummaryAction, generateAISummaryAction } from "@/actions/UploadActions";
 import { useRouter } from "next/navigation";
 import LoadingSkeleton from "./LoadingSkeleton";
+import { extractTextFromPDF } from "@/utils/pdfProcessor";
 const schema = z.object({
   file: z
     .instanceof(File, { message: "Invalid file" })
@@ -26,7 +28,6 @@ export default function UploadForm() {
   const [isProcessing, setIsProcessing] = useState(false)
   const { startUpload } = useUploadThing('pdfUploader', {
     onClientUploadComplete: () => {
-      console.log('Uploaded Successfully');
       // Don't show success toast here - we'll handle it after PDF processing
     },
     onUploadError: (err) => {
@@ -36,7 +37,6 @@ export default function UploadForm() {
       setIsProcessing(false)
     },
     onUploadBegin: (file) => {
-      console.log('upload has begun for', file);
       setIsProcessing(true)
     }
   })
@@ -66,32 +66,40 @@ export default function UploadForm() {
     const fileUrl = uploadedFile.url;
 
     // success/error toasts are handled in callbacks above using the same toast id
-    // parse the pdf to langChain
-    const summaryResult = await generatePDFSummary([uploadedFile]);
-    console.log(summaryResult);
-    const { data = null, message = null } = summaryResult || {}
-    // summarise the PDF using AI
+    // parse the pdf to extract text and generate summary
+    try {
+      // Extract text from PDF on client side
+      const pdfText = await extractTextFromPDF(file);
 
-    if (!summaryResult.success) {
-      toast.error(summaryResult.message, { id: uploadToastId.current });
+      // Generate summary using AI
+      const summaryResult = await generateAISummaryAction(pdfText);
+      if (!summaryResult.success) {
+        toast.error(summaryResult.message || "Failed to generate summary", { id: uploadToastId.current });
+        uploadToastId.current = undefined;
+        setIsProcessing(false);
+        return;
+      }
+
+      const summary = summaryResult.summary;
+      if (!summary) {
+        toast.error("Failed to generate summary", { id: uploadToastId.current });
+        uploadToastId.current = undefined;
+        setIsProcessing(false);
+        return;
+      }
+
+      toast.success("PDF processed successfully! ✅", {
+        id: uploadToastId.current,
+        duration: 4000 // Toast will disappear after 4 seconds
+      });
       uploadToastId.current = undefined;
-      setIsProcessing(false)
-      return;
-    }
 
-    console.log("PDF text extracted:", summaryResult.data?.text?.substring(0, 200) + "...");
-    toast.success("PDF processed successfully! ✅", {
-      id: uploadToastId.current,
-      duration: 4000 // Toast will disappear after 4 seconds
-    });
-    uploadToastId.current = undefined;
-    // save the summary to DB
-    if (data?.summary) {
+      // save the summary to DB
       const storeResults = await storePdfSummaryAction({
         fileUrl,
-        summary: data.summary,
-        title: data.fileName,
-        fileName: data.fileName,
+        summary,
+        title: file.name,
+        fileName: file.name,
       });
 
       if (storeResults.success && storeResults.data?.id) {
@@ -99,11 +107,17 @@ export default function UploadForm() {
         formEl.reset();
         router.push(`/summaries/${storeResults.data.id}`);
       } else {
-        toast.error(storeResults.message || 'Failed to save summary');
+        toast.error('Failed to save summary to database');
       }
+    } catch (error) {
+      console.error("Error processing PDF:", error);
+      toast.error(`Failed to process PDF: ${error instanceof Error ? error.message : 'Unknown error'}`, {
+        id: uploadToastId.current
+      });
+      uploadToastId.current = undefined;
+    } finally {
+      setIsProcessing(false);
     }
-    // redirect to [id] summary Page
-    setIsProcessing(false)
   };
   return (
     <>

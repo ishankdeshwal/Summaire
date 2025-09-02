@@ -1,7 +1,6 @@
 'use client'
 import { Download } from "lucide-react";
 import { Button } from "../ui/button";
-import html2pdf from "html2pdf.js";
 
 export function DownloadSummaryButton({
   title,
@@ -14,7 +13,10 @@ export function DownloadSummaryButton({
   fileName: string;
   createdAt: string;
 }) {
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    // Dynamic import to avoid SSR issues
+    const html2pdf = (await import("html2pdf.js")).default;
+
     const summaryContent = `
       <div style="
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -57,7 +59,7 @@ export function DownloadSummaryButton({
     // PDF options
     const opt = {
       margin: 0.5,
-      filename: `Summary-${title.replace(/[^a-z0-9]/gi,'_')}.pdf`,
+      filename: `Summary-${title.replace(/[^a-z0-9]/gi, '_')}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { unit: "in", format: "a4", orientation: "portrait" }

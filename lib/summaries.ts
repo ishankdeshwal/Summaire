@@ -26,17 +26,17 @@ export async function GetSummaryById(id: string) {
     `;
     return summary;
   } catch (error) {
-    console.log("error fetching summary by id", error);
     return null;
   }
 }
 
-export async function getUserUploadCount(userId:string){
-  const sql=await GetDbConnection()
+export async function getUserUploadCount(userId: string) {
+  const sql = await GetDbConnection()
   try {
-    const [result]=await sql`SELECT COUNT(*) as count FROM pdf_summaries WHERE user_id=${userId}`
-    return result?.count ||0
+    const [result] = await sql`SELECT COUNT(*) as count FROM pdf_summaries WHERE user_id=${userId}`
+    return result?.count || 0
   } catch (error) {
-    console.error('Error fetching user upload count')
+    console.error('Error fetching user upload count:', error)
+    return 0
   }
 }

@@ -6,7 +6,8 @@ import { getUserUploadCount } from "./summaries";
 export async function getPriceIdForActiveUser(email: string) {
     const sql = await GetDbConnection()
     const query = await sql`SELECT price_id FROM users where email=${email} AND status ='active'`
-    return query?.[0]?.price_id || null
+    const result = query?.[0]?.price_id || null
+    return result
 }
 export async function hasActivePlan(email: string) {
     const sql = await GetDbConnection()
@@ -21,7 +22,7 @@ export async function hasReachedUploadLimit(userId: string, userEmail?: string) 
     }
     const isPro = pricingPlans.find((plan) => plan.priceId === priceId)?.id === 'pro'
     const hasAnyPlan = Boolean(priceId)
-    const uploadLimit: number = isPro ? 1000 : hasAnyPlan ? 5 : 1
+    const uploadLimit: number = isPro ? 1000 : hasAnyPlan ? 5 : 3
     return { hasReachedLimit: uploadCount >= uploadLimit, uploadLimit }
 }
 export async function getSubscriptionStatus(user: User) {

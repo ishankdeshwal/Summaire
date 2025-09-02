@@ -3,7 +3,7 @@ import EmptyPage from "@/components/summaries/EmptySummary";
 import SummaryCard from "@/components/summaries/SummaryCard";
 import { Button } from "@/components/ui/button";
 import { getSummaries } from "@/lib/summaries";
-import { hasReachedUploadLimit } from "@/lib/user";
+import { hasReachedUploadLimit, getPriceIdForActiveUser } from "@/lib/user";
 import { currentUser } from "@clerk/nextjs/server";
 import { ArrowRight, Plus } from "lucide-react";
 import Link from "next/link";
@@ -11,6 +11,7 @@ import { redirect } from "next/navigation";
 import { MotionDiv, MotionSection } from "@/components/common/motion-wrapper";
 import { containerVariants, itemVariant } from "@/lib/constants";
 import SummaryCardSkeleton from "@/components/summaries/SummaryCardSkeleton";
+import { pricingPlans } from "@/lib/constants";
 
 export default async function DashboardPage() {
   const user = await currentUser();
@@ -21,6 +22,20 @@ export default async function DashboardPage() {
   const { hasReachedLimit, uploadLimit } = await hasReachedUploadLimit(userId);
   const summaries = await getSummaries(userId);
   const isLoading = false; // kept for future streaming/loading state
+
+  // Get user's current upload count
+  const { getUserUploadCount } = await import("@/lib/summaries");
+  const currentCount = await getUserUploadCount(userId);
+
+  // Determine plan type
+  const userEmail = user.emailAddresses[0].emailAddress;
+  const priceId = await getPriceIdForActiveUser(userEmail);
+  let planType: 'free' | 'basic' | 'pro' = 'free';
+  if (priceId) {
+    const plan = pricingPlans.find(p => p.priceId === priceId);
+    planType = plan?.id as 'basic' | 'pro' || 'free';
+  }
+
   return (
     <main className="min-h-screen mb-40">
       <BgGradient />
@@ -50,12 +65,12 @@ export default async function DashboardPage() {
             )}
           </div>
         </div>
+
         {hasReachedLimit && (
-          <MotionDiv variants={itemVariant} className="mb-6">
+          <MotionDiv variants={itemVariant} className="mb-6 px-2">
             <div className="bg-rose-100 border border-rose-200 rounded-lg p-4 text-rose-700">
               <p className="text-sm">
-                You've reached the limit of {uploadLimit} uploads on the basic
-                plan.
+                You've reached the limit of {uploadLimit} uploads on the {planType === 'free' ? 'free' : planType} plan.
                 <Link
                   href="/#pricing"
                   className="text-rose-800 underline font-medium underline-offset-4 inline-flex items-center"
@@ -69,6 +84,7 @@ export default async function DashboardPage() {
             </div>
           </MotionDiv>
         )}
+
         {isLoading ? (
           <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 sm:px-0">
             {Array.from({ length: 6 }).map((_, i) => (

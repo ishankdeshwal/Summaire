@@ -47,11 +47,9 @@ export const POST = async (req: NextRequest) => {
         break;
 
       case 'customer.subscription.deleted':
-        console.log('Customer subscription deleted')
         const subscription = event.data.object
         const subscriptionId = event.data.object.id
         await handleSubscriptionDeleted({ subscriptionId, stripe })
-        console.log(subscription);
         break;
 
       case "invoice.payment_succeeded":

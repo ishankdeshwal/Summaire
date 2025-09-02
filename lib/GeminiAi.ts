@@ -1,10 +1,14 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { SUMMARY_SYSTEM_PROMPT } from "../utils/prompt";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-
 export const generateSummary = async (pdfText: string): Promise<string> => {
   try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY environment variable is not set");
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = {
@@ -24,12 +28,12 @@ with contextually relevant emojis and proper markdown formatting:\n\n${pdfText}`
     // Generate the summary
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    if(!response.text()){
-        throw new Error('EMPTY RESPONSE FROM GEMINI API')
+    if (!response.text()) {
+      throw new Error('EMPTY RESPONSE FROM GEMINI API')
     }
     return response.text();
   } catch (error: any) {
     console.error("GEMINI API ERROR:", error);
-    throw new Error("Failed to generate summary. Please try again later.");
+    throw new Error(`Failed to generate summary: ${error.message || 'Unknown error'}`);
   }
 };

@@ -8,9 +8,8 @@ export default async function Layout({ children }: { children: React.ReactNode }
     if (!user) {
         redirect('sign-in')
     }
-    const hasActiveSubscription = await hasActivePlan(user.emailAddresses[0].emailAddress);
-    if (!hasActiveSubscription) {
-        return <UpgradeRequired />
-    }
+
+    // Allow all authenticated users to access basic features
+    // The individual pages will handle their own access controls
     return <>{children}</>
 }

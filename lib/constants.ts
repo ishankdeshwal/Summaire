@@ -2,6 +2,20 @@ import { isDev } from "@/utils/helper";
 
 export const pricingPlans = [
   {
+    id: "free",
+    name: "Free",
+    price: 0,
+    description: "Get started with AI summaries",
+    items: [
+      "1 PDF summary per month",
+      "Standard processing speed",
+      "Basic AI summaries",
+      "Community support",
+    ],
+    paymentLink: "",
+    priceId: "",
+  },
+  {
     id: "basic",
     name: "Basic",
     price: 49,
@@ -9,7 +23,8 @@ export const pricingPlans = [
     items: [
       "5 PDF summaries per month",
       "Standard processing speed",
-      "Email Suppport",
+      "Email Support",
+      "Basic AI summaries",
     ],
     paymentLink: process.env.NEXT_PUBLIC_STRIPE_LINK_BASIC || (isDev
       ? "https://buy.stripe.com/test_00w9AN8Ar6Mgegggrt2sM01"
@@ -22,13 +37,14 @@ export const pricingPlans = [
     price: 149,
     description: "For professionals and teams",
     items: [
-      "Unlimited PDF summaries",
+      "1000 PDF summaries per month",
       "Priority Processing",
       "24/7 priority Support",
       "MarkDown Export",
+      "Advanced AI summaries",
     ],
     paymentLink: process.env.NEXT_PUBLIC_STRIPE_LINK_PRO || (isDev
-      ? "https://buy.stripe.com/test_cNifZb8Ar1rWdcc7UX2sM00"
+      ? "https://buy.stripe.com/test_cNifZb8Ar6Mgegggrt2sM00"
       : ""),
     priceId: isDev ? "price_1S24Ig7vVuxJhE5DDvIkf3Gi" : "",
   },
