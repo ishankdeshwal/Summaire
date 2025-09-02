@@ -36,19 +36,19 @@ export default function SummaryCard({ summary }: { summary: Record<string, unkno
       <Card className="relative h-full px-5 py-2 sm:py-6 gap-4">
         <div className="flex items-start justify-between gap-4">
           <Summaryheader
-            fileUrl={summary.original_file_url}
-            title={summary.title}
-            createdAt={summary.created_at}
+            fileUrl={summary.original_file_url as string}
+            title={summary.title as string}
+            createdAt={summary.created_at as string}
           />
-          <DeleteButton summaryId={summary.id} />
+          <DeleteButton summaryId={summary.id as string} />
         </div>
-        <Link href={`summaries/${summary.id}`} className="block">
+        <Link href={`summaries/${summary.id as string}`} className="block">
           <div className="flex flex-col gap-3 sm:gap-4">
             <p className="text-sm line-clamp-2 sm:text-base pl-2 text-gray-500">
-              {summary.summary_text}
+              {summary.summary_text as string}
             </p>
             <div className="flex justify-between items-center mt-2 sm:mt-4">
-              <StatusBadge status={summary.status} />
+              <StatusBadge status={summary.status as string} />
             </div>
           </div>
         </Link>

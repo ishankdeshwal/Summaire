@@ -47,6 +47,7 @@ export async function createOrUpdateUser({
   priceId,
   status,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sql: any;
   email: string;
   fullName: string;
@@ -141,6 +142,7 @@ export async function createPayment({
   priceId,
   userEmail,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sql: any;
   session: Stripe.Checkout.Session;
   priceId: string;
@@ -180,6 +182,7 @@ export async function createPaymentFromIntent({
   priceId,
   userEmail,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sql: any;
   paymentIntent: Stripe.PaymentIntent;
   priceId: string;
