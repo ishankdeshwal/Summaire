@@ -1,3 +1,4 @@
+// @ts-expect-error no types available for pdf-parse
 import pdf from "pdf-parse";
 
 export async function fetchAndExtractText(fileUrl: string) {
