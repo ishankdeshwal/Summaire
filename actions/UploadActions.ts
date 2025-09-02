@@ -1,5 +1,4 @@
 "use server";
-export const runtime = 'nodejs';
 
 import { GetDbConnection } from "@/lib/db";
 import { generateSummary } from "@/lib/GeminiAi";
