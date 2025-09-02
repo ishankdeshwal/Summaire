@@ -34,3 +34,35 @@ export async function getPlanInfo(email: string) {
         };
     }
 }
+
+export async function getPlanStatus(userId: string, email: string) {
+    try {
+        const { getUserUploadCount } = await import("@/lib/summaries");
+        const { hasReachedUploadLimit } = await import("@/lib/user");
+
+        const priceId = await getPriceIdForActiveUser(email);
+        const currentCount = await getUserUploadCount(userId);
+        const { uploadLimit } = await hasReachedUploadLimit(userId, email);
+
+        // Determine plan type
+        let planType: 'free' | 'basic' | 'pro' = 'free';
+        if (priceId) {
+            const plan = pricingPlans.find(p => p.priceId === priceId);
+            planType = plan?.id as 'basic' | 'pro' || 'free';
+        }
+
+        return {
+            success: true,
+            data: {
+                planType,
+                currentCount,
+                uploadLimit
+            }
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error'
+        };
+    }
+}

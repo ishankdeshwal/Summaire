@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Crown, Zap, Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import { getPlanStatus } from "@/actions/PlanActions";
 
 interface PlanStatus {
     planType: 'free' | 'basic' | 'pro';
@@ -24,29 +25,12 @@ export default function CurrentPlanStatus() {
             }
 
             try {
-                const [userModule, summariesModule] = await Promise.all([
-                    import("@/lib/user"),
-                    import("@/lib/summaries")
-                ]);
-
                 const email = user.emailAddresses[0].emailAddress;
-                const priceId = await userModule.getPriceIdForActiveUser(email);
-                const currentCount = await summariesModule.getUserUploadCount(user.id);
-                const { uploadLimit } = await userModule.hasReachedUploadLimit(user.id, email);
+                const result = await getPlanStatus(user.id, email);
 
-                // Determine plan type
-                const { pricingPlans } = await import("@/lib/constants");
-                let planType: 'free' | 'basic' | 'pro' = 'free';
-                if (priceId) {
-                    const plan = pricingPlans.find(p => p.priceId === priceId);
-                    planType = plan?.id as 'basic' | 'pro' || 'free';
+                if (result.success && result.data) {
+                    setPlanStatus(result.data);
                 }
-
-                setPlanStatus({
-                    planType,
-                    currentCount,
-                    uploadLimit
-                });
             } catch (error) {
                 console.error('Error fetching plan status:', error);
             } finally {
