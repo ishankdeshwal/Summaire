@@ -3,12 +3,13 @@
 import { GetDbConnection } from "@/lib/db";
 import { generateSummary } from "@/lib/GeminiAi";
 import { fetchAndExtractText } from "@/lib/langChain";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
 
 interface PDFSummaryType {
   userId: string;
+  userName: string;
   fileUrl: string;
   summary: string;
   title: string;
@@ -97,6 +98,7 @@ export async function generatePDFSummary(
 }
 export async function savePDFSummary({
   userId,
+  userName,
   fileUrl,
   summary,
   title,
@@ -104,9 +106,10 @@ export async function savePDFSummary({
 }: PDFSummaryType) {
   try {
     const sql = await GetDbConnection();
-    const result = await sql`INSERT INTO pdf_summaries (user_id, original_file_url, summary_text, title, file_name)
+    const result = await sql`INSERT INTO pdf_summaries (user_id, user_name, original_file_url, summary_text, title, file_name)
 VALUES (
     ${userId},
+    ${userName},
     ${fileUrl},
     ${summary},
     ${title},
@@ -115,7 +118,7 @@ VALUES (
 `;
     return result[0];
   } catch (error) {
-    console.error("Error savig PDF summary", error);
+    console.error("Error saving PDF summary", error);
     throw error;
   }
 }
@@ -138,9 +141,8 @@ export async function storePdfSummaryAction({
   title,
   fileName,
 }: StorePDFSummaryInput) {
-  // user is logged in adn has userId
-  // save  PDFsummary
-  // save PDF summary()
+  // user is logged in and has userId
+  // save PDF summary
   let savedSummary: any;
   try {
     const { userId } = await auth();
@@ -150,8 +152,14 @@ export async function storePdfSummaryAction({
         message: "User not found",
       };
     }
+    
+    // Get user's name from Clerk using currentUser
+    const user = await currentUser();
+    const userName = user?.fullName || user?.firstName || user?.lastName || 'Unknown User';
+    
     savedSummary = await savePDFSummary({
       userId,
+      userName,
       fileUrl,
       summary,
       title,

@@ -16,6 +16,7 @@ CREATE TABLE users (
 CREATE TABLE pdf_summaries (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id VARCHAR(255) NOT NULL,
+    user_name VARCHAR(255),
     original_file_url TEXT NOT NULL,
     summary_text TEXT NOT NULL,
     status VARCHAR(50) DEFAULT 'completed',
