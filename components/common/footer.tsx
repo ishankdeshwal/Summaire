@@ -38,7 +38,7 @@ export default async function Footer() {
                                     Try Sommaire free. No credit card required.
                                 </p>
                             </div>
-                            {!hasReachedLimit && hasActiveSubscription && (
+                            {!hasReachedLimit  && (
                                 <div className="flex flex-col sm:flex-row items-stretch gap-3 w-full md:w-auto">
                                     <Link href="/upload">
                                         <Button className="w-full sm:w-auto inline-flex items-center gap-2">
