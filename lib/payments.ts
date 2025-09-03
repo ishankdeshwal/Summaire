@@ -70,6 +70,37 @@ export async function createOrUpdateUser({
   }
 }
 
+export async function createOrUpdateUserForSignIn({
+  sql,
+  email,
+  fullName,
+  clerkUserId,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sql: any;
+  email: string;
+  fullName?: string;
+  clerkUserId?: string;
+}) {
+  try {
+    const user = await sql`SELECT * FROM users WHERE email=${email}`;
+    if (user.length === 0) {
+      // Create new user with default inactive status (no payment yet)
+      await sql`INSERT INTO users (email, full_name, status) VALUES (${email}, ${fullName || null}, 'inactive')`;
+      console.log(`New user created for sign-in: ${email}`);
+    } else {
+      // Update full name if provided and not already set
+      if (fullName && !user[0].full_name) {
+        await sql`UPDATE users SET full_name=${fullName} WHERE email=${email}`;
+      }
+      console.log(`Existing user signed in: ${email}`);
+    }
+  } catch (error) {
+    console.error("Error creating or updating user for sign-in:", error);
+    throw error;
+  }
+}
+
 export async function handlePaymentIntentSucceeded({
   paymentIntent,
   stripe,

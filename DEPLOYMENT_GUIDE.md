@@ -42,11 +42,15 @@ NEXT_PUBLIC_APP_URL=https://your-domain.com
 3. Check that the middleware is not blocking authentication requests
 4. Ensure the ClerkProvider is properly wrapping your app
 
+
+
 ## Recent Changes Made:
 
 1. Fixed ESLint configuration
 2. Added explicit redirect URLs to SignIn and SignUp components
 3. Improved middleware formatting
 4. Added proper error handling
+5. **NEW**: Simplified user storage - users are automatically saved on first sign-in
+6. **NEW**: Removed unnecessary tracking complexity
 
 If the issue persists, check the browser console for specific error messages and verify all environment variables are correctly set in your deployment platform.
