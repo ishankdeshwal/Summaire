@@ -13,7 +13,11 @@ interface RazorpayButtonProps {
   className?: string;
   children?: React.ReactNode;
 }
-
+interface RazorpayResponse {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
 declare global {
   interface Window {
     Razorpay: any;
@@ -28,6 +32,7 @@ export default function RazorpayButton({
   className,
   children,
 }: RazorpayButtonProps) {
+
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useUser();
 
@@ -96,7 +101,7 @@ export default function RazorpayButton({
           email: user?.emailAddresses[0]?.emailAddress || "",
         },
         theme: orderData.theme,
-        handler: async function (response: any) {
+        handler: async function (response: RazorpayResponse) {
           // Handle successful payment
           try {
             const paymentResponse = await fetch("/api/payments", {

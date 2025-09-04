@@ -1,5 +1,5 @@
 import Razorpay from 'razorpay';
-
+import crypto from "crypto";
 if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
   console.error('Razorpay environment variables are missing!');
 }
@@ -42,12 +42,11 @@ export function verifyRazorpayPayment(
   paymentId: string,
   signature: string
 ): boolean {
-  const crypto = require('crypto');
   const expectedSignature = crypto
-    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "")
     .update(`${orderId}|${paymentId}`)
-    .digest('hex');
-  
+    .digest("hex");
+
   return expectedSignature === signature;
 }
 

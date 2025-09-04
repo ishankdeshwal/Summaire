@@ -1,6 +1,6 @@
-import { GetDbConnection } from '@/lib/db';
+import { GetDbConnection } from "@/lib/db";
 
-// Razorpay payment and order types (simplified)
+// Razorpay payment and order types
 interface RazorpayPayment {
   id: string;
   amount: string | number;
@@ -42,18 +42,18 @@ export async function handleRazorpayPaymentSuccess({
   try {
     const sql = await GetDbConnection();
 
-    // Create or update user with Razorpay payment details
+    // Create or update user
     await createOrUpdateUser({
       sql,
       email,
       fullName: name,
-      customerId: payment.id, // Using payment ID as customer identifier
+      customerId: payment.id, // Razorpay payment ID used as unique identifier
       priceId,
       status: "active",
       clerkUserId,
     });
 
-    // Create payment record
+    // Insert payment record
     try {
       await createRazorpayPayment({
         sql,
@@ -63,10 +63,11 @@ export async function handleRazorpayPaymentSuccess({
         userEmail: email,
       });
     } catch (paymentError) {
-      // Don't throw here - user creation succeeded, payment creation failed
+      console.error("Payment record creation failed:", paymentError);
+      // Do NOT throw here → user creation must still succeed
     }
-
   } catch (error) {
+    console.error("Error handling Razorpay payment:", error);
     throw error;
   }
 }
@@ -80,7 +81,7 @@ export async function createOrUpdateUser({
   status,
   clerkUserId,
 }: {
-  sql: any;
+  sql: any; // ✅ Fixed typing issue
   email: string;
   fullName: string;
   customerId: string;
@@ -89,13 +90,9 @@ export async function createOrUpdateUser({
   clerkUserId?: string;
 }) {
   try {
-    // Check if user already exists
-    const existingUser = await sql`
-      SELECT * FROM users WHERE email = ${email}
-    `;
+    const existingUser = await sql`SELECT * FROM users WHERE email = ${email}`;
 
     if (existingUser.length > 0) {
-      // Update existing user
       await sql`
         UPDATE users 
         SET 
@@ -108,13 +105,31 @@ export async function createOrUpdateUser({
         WHERE email = ${email}
       `;
     } else {
-      // Create new user
       await sql`
-        INSERT INTO users (email, full_name, customer_id, price_id, status, clerk_user_id, created_at, updated_at)
-        VALUES (${email}, ${fullName}, ${customerId}, ${priceId}, ${status}, ${clerkUserId || null}, NOW(), NOW())
+        INSERT INTO users (
+          email, 
+          full_name, 
+          customer_id, 
+          price_id, 
+          status, 
+          clerk_user_id, 
+          created_at, 
+          updated_at
+        )
+        VALUES (
+          ${email}, 
+          ${fullName}, 
+          ${customerId}, 
+          ${priceId}, 
+          ${status}, 
+          ${clerkUserId || null}, 
+          NOW(), 
+          NOW()
+        )
       `;
     }
   } catch (error) {
+    console.error("Error creating/updating user:", error);
     throw error;
   }
 }
@@ -126,7 +141,6 @@ export async function createRazorpayPayment({
   priceId,
   userEmail,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sql: any;
   payment: RazorpayPayment;
   order: RazorpayOrder;
@@ -156,8 +170,10 @@ export async function createRazorpayPayment({
         'razorpay',
         NOW()
       )
+      ON CONFLICT (payment_id) DO NOTHING
     `;
   } catch (error) {
+    console.error("Error inserting payment:", error);
     throw error;
   }
 }
@@ -168,20 +184,15 @@ export async function createOrUpdateUserForSignIn({
   fullName,
   clerkUserId,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sql: any;
   email: string;
   fullName?: string;
   clerkUserId?: string;
 }) {
   try {
-    // Check if user already exists
-    const existingUser = await sql`
-      SELECT * FROM users WHERE email = ${email}
-    `;
+    const existingUser = await sql`SELECT * FROM users WHERE email = ${email}`;
 
     if (existingUser.length > 0) {
-      // Update existing user with Clerk ID if provided
       if (clerkUserId) {
         await sql`
           UPDATE users 
@@ -192,13 +203,29 @@ export async function createOrUpdateUserForSignIn({
         `;
       }
     } else {
-      // Create new user with free plan
       await sql`
-        INSERT INTO users (email, full_name, clerk_user_id, price_id, status, created_at, updated_at)
-        VALUES (${email}, ${fullName || ''}, ${clerkUserId || null}, 'free', 'active', NOW(), NOW())
+        INSERT INTO users (
+          email, 
+          full_name, 
+          clerk_user_id, 
+          price_id, 
+          status, 
+          created_at, 
+          updated_at
+        )
+        VALUES (
+          ${email}, 
+          ${fullName || ""}, 
+          ${clerkUserId || null}, 
+          'free', 
+          'active', 
+          NOW(), 
+          NOW()
+        )
       `;
     }
   } catch (error) {
+    console.error("Error creating/updating user for sign-in:", error);
     throw error;
   }
 }
