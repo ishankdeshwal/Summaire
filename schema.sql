@@ -8,6 +8,7 @@ CREATE TABLE users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     full_name VARCHAR(255),
+    clerk_user_id VARCHAR(255) UNIQUE,
     customer_id VARCHAR(255) UNIQUE,
     price_id VARCHAR(255),
     status VARCHAR(50) DEFAULT 'inactive'
@@ -28,11 +29,14 @@ CREATE TABLE pdf_summaries (
 
 CREATE TABLE payments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    payment_id VARCHAR(255) UNIQUE NOT NULL,
+    order_id VARCHAR(255) NOT NULL,
     amount INTEGER NOT NULL,
+    currency VARCHAR(10) DEFAULT 'INR',
     status VARCHAR(50) NOT NULL,
-    stripe_payment_id VARCHAR(255) UNIQUE NOT NULL,
     price_id VARCHAR(255) NOT NULL,
     user_email VARCHAR(255) NOT NULL REFERENCES users(email),
+    payment_method VARCHAR(50) DEFAULT 'razorpay',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

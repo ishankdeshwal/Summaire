@@ -1,105 +1,73 @@
-import { handleCheckoutSessionCompleted, handlePaymentIntentSucceeded, handleSubscriptionDeleted, createOrUpdateUser } from "@/lib/payments";
+import { handleRazorpayPaymentSuccess, createOrUpdateUser } from "@/lib/razorpay-payments";
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
+import { verifyRazorpayPayment, getRazorpayPayment, getRazorpayOrder } from "@/lib/razorpay";
 import { GetDbConnection } from "@/lib/db";
+import { currentUser } from "@clerk/nextjs/server";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 export const POST = async (req: NextRequest) => {
-  const payload = await req.text();
-  const sign = req.headers.get("stripe-signature");
-  let event;
-  const endPointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
-
-
-
   try {
-    event = stripe.webhooks.constructEvent(payload, sign!, endPointSecret);
+    const { order_id, payment_id, signature, email, name } = await req.json();
 
-
-    switch (event.type) {
-      case "checkout.session.completed":
-        const sessionId = event.data.object.id;
-        try {
-          const session = await stripe.checkout.sessions.retrieve(sessionId, {
-            expand: ['line_items']
-          });
-          await handleCheckoutSessionCompleted({ session, stripe });
-        } catch (error) {
-          console.error('Error processing checkout session:', error);
-          return NextResponse.json(
-            { error: "Failed to process checkout session" },
-            { status: 500 }
-          );
-        }
-        break;
-
-      case "payment_intent.succeeded":
-        const paymentIntent = event.data.object;
-        try {
-          await handlePaymentIntentSucceeded({ paymentIntent, stripe });
-        } catch (error) {
-          console.error('Error processing payment intent:', error);
-          return NextResponse.json(
-            { error: "Failed to process payment intent" },
-            { status: 500 }
-          );
-        }
-        break;
-
-      case 'customer.subscription.deleted':
-        const subscription = event.data.object
-        const subscriptionId = event.data.object.id
-        await handleSubscriptionDeleted({ subscriptionId, stripe })
-        break;
-
-      case "invoice.payment_succeeded":
-        const invoice = event.data.object;
-        // Handle invoice payment - this is common with payment links
-        try {
-          const customerId = invoice.customer as string;
-          const customer = await stripe.customers.retrieve(customerId);
-
-          if ("email" in customer && customer.email) {
-            const sql = await GetDbConnection();
-
-            // For invoice payments, we need to get the price from the invoice line items
-            const invoiceWithItems = await stripe.invoices.retrieve(invoice.id!, {
-              expand: ['lines.data.price']
-            });
-
-            const priceId = (invoiceWithItems.lines.data[0] as { price?: { id: string } })?.price?.id;
-
-            if (priceId) {
-              await createOrUpdateUser({
-                sql,
-                email: customer.email,
-                fullName: customer.name || "",
-                customerId,
-                priceId,
-                status: "active",
-              });
-
-            }
-          }
-        } catch (error) {
-          console.error('Error processing invoice payment:', error);
-        }
-        break;
-
-      default:
-        // Unhandled event type
-        break;
+    if (!order_id || !payment_id || !signature) {
+      return NextResponse.json(
+        { error: "Missing required payment parameters" },
+        { status: 400 }
+      );
     }
 
-  } catch (err) {
-    console.error("Webhook error:", err);
+    // Verify the payment signature
+    const isValidSignature = verifyRazorpayPayment(order_id, payment_id, signature);
+    
+    if (!isValidSignature) {
+      return NextResponse.json(
+        { error: "Invalid payment signature" },
+        { status: 400 }
+      );
+    }
+
+    // Get payment and order details from Razorpay
+    const [payment, order] = await Promise.all([
+      getRazorpayPayment(payment_id),
+      getRazorpayOrder(order_id)
+    ]);
+
+    // Extract plan information from order notes
+    const planId = String(order.notes?.planId || '');
+    const planName = String(order.notes?.planName || '');
+    const priceId = String(order.notes?.priceId || '');
+
+    if (!planId || !priceId) {
+      return NextResponse.json(
+        { error: "Invalid order data" },
+        { status: 400 }
+      );
+    }
+
+    // Get current user from Clerk
+    const user = await currentUser();
+    const clerkUserId = user?.id;
+
+    // Handle successful payment
+    await handleRazorpayPaymentSuccess({
+      payment,
+      order,
+      email: email || payment.email || "",
+      name: name || payment.notes?.name || "",
+      planId,
+      priceId,
+      planName,
+      clerkUserId,
+    });
+
+    return NextResponse.json({
+      status: "success",
+      message: "Payment processed successfully",
+    });
+
+  } catch (error) {
     return NextResponse.json(
-      { error: "Failed to trigger webhooks" },
-      { status: 400 }
+      { error: "Failed to process payment" },
+      { status: 500 }
     );
   }
-  return NextResponse.json({
-    status: "success",
-    message: "Hello From stripe  API",
-  });
 };

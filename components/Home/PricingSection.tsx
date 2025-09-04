@@ -2,6 +2,7 @@ import { pricingPlans } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { ArrowRight, CheckIcon, Crown } from "lucide-react";
 import CurrentPlanStatus from "./CurrentPlanStatus";
+import RazorpayButton from "@/components/payments/RazorpayButton";
 type PriceType = {
   name: string;
   price: number;
@@ -19,6 +20,7 @@ const PricingCard = ({
   items,
   id,
   paymentLink,
+  priceId,
 }: PriceType) => {
   const isFree = id === "free";
   const isPro = id === "pro";
@@ -73,18 +75,19 @@ const PricingCard = ({
               Current Plan
             </div>
           ) : (
-            <a
-              href={paymentLink}
+            <RazorpayButton
+              priceId={priceId}
+              planName={name}
+              amount={price}
+              description={description}
               className={cn(
-                "w-full rounded-full flex items-center justify-center gap-2 bg-linear-to-r from-rose-800 to-rose-500 hover:from-rose-500 hover:to-rose-800 text-white border-2 py-2 transition-colors",
                 isPro
                   ? "from-rose-900"
                   : "border-rose-100 from-rose-400 to-rose-500"
               )}
             >
               Buy Now
-              <ArrowRight size={18} />
-            </a>
+            </RazorpayButton>
           )}
         </div>
       </div>

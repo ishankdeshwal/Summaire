@@ -26,10 +26,8 @@ export const pricingPlans = [
       "Email Support",
       "Basic AI summaries",
     ],
-    paymentLink: process.env.NEXT_PUBLIC_STRIPE_LINK_BASIC || (isDev
-      ? "https://buy.stripe.com/test_00w9AN8Ar6Mgegggrt2sM01"
-      : ""),
-    priceId: isDev ? "price_1S24FZ7vVuxJhE5DSkDY7mdv" : "",
+    paymentLink: "",
+    priceId: "basic_plan", // Razorpay plan identifier
   },
   {
     id: "pro",
@@ -43,10 +41,8 @@ export const pricingPlans = [
       "MarkDown Export",
       "Advanced AI summaries",
     ],
-    paymentLink: process.env.NEXT_PUBLIC_STRIPE_LINK_PRO || (isDev
-      ? "https://buy.stripe.com/test_cNifZb8Ar6Mgegggrt2sM00"
-      : ""),
-    priceId: isDev ? "price_1S24Ig7vVuxJhE5DDvIkf3Gi" : "",
+    paymentLink: "",
+    priceId: "pro_plan", // Razorpay plan identifier
   },
 ];
 

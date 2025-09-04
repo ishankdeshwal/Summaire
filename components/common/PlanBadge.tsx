@@ -19,51 +19,66 @@ export default function PlanBadge() {
     const [isLoading, setIsLoading] = useState(true);
     const { user, isLoaded } = useUser();
 
-    useEffect(() => {
-        const fetchPlanInfo = async () => {
-            try {
-                if (!user?.id) {
-                    setIsLoading(false);
-                    return;
-                }
+    const fetchPlanInfo = async () => {
+        try {
+            if (!user?.id) {
+                setIsLoading(false);
+                return;
+            }
 
-                const email = user.emailAddresses[0].emailAddress;
-                if (!email) {
-                    setIsLoading(false);
-                    return;
-                }
+            const email = user.emailAddresses[0].emailAddress;
+            if (!email) {
+                setIsLoading(false);
+                return;
+            }
 
-                // Fetch plan info using server action
-                const result = await getPlanInfo(email);
+            // Fetch plan info using server action
+            const result = await getPlanInfo(email);
 
-                if (result.success && result.data) {
-                    setPlanInfo(result.data);
-                } else {
-                    // Fallback to free plan
-                    setPlanInfo({
-                        planName: "Buy a plan",
-                        priceId: null,
-                        planType: 'free'
-                    });
-                }
-            } catch (error) {
-                console.error('Error fetching plan info:', error);
+            if (result.success && result.data) {
+                setPlanInfo(result.data);
+            } else {
                 // Fallback to free plan
                 setPlanInfo({
                     planName: "Buy a plan",
                     priceId: null,
                     planType: 'free'
                 });
-            } finally {
-                setIsLoading(false);
             }
-        };
+        } catch (error) {
+            console.error('Error fetching plan info:', error);
+            // Fallback to free plan
+            setPlanInfo({
+                planName: "Buy a plan",
+                priceId: null,
+                planType: 'free'
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
+    useEffect(() => {
         if (isLoaded && user) {
             fetchPlanInfo();
         } else if (isLoaded && !user) {
             setIsLoading(false);
         }
+    }, [user, isLoaded]);
+
+    // Listen for payment success events to refresh plan info
+    useEffect(() => {
+        const handlePaymentSuccess = () => {
+            if (user && isLoaded) {
+                fetchPlanInfo();
+            }
+        };
+
+        window.addEventListener('paymentSuccess', handlePaymentSuccess);
+        
+        return () => {
+            window.removeEventListener('paymentSuccess', handlePaymentSuccess);
+        };
     }, [user, isLoaded]);
 
     // Show loading only when Clerk is still loading

@@ -8,15 +8,18 @@ import Link from "next/link";
 function SuccessContent() {
     const searchParams = useSearchParams();
     const sessionId = searchParams.get("session_id");
+    const orderId = searchParams.get("order_id");
+    const paymentId = searchParams.get("payment_id");
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (sessionId) {
+        // Check for either Stripe session_id or Razorpay order_id/payment_id
+        if (sessionId || (orderId && paymentId)) {
             setIsLoading(false);
         } else {
             window.location.href = "/pricing";
         }
-    }, [sessionId]);
+    }, [sessionId, orderId, paymentId]);
 
     if (isLoading) {
         return (
@@ -41,21 +44,16 @@ function SuccessContent() {
                 </p>
                 <div className="space-y-3">
                     <Link
-                        href="/"
+                        href="/dashboard"
                         className="block w-full bg-rose-500 text-white py-2 px-4 rounded-lg hover:bg-rose-600 transition-colors"
                     >
                         Go to Dashboard
                     </Link>
-                    <Link
-                        href="/pricing"
-                        className="block w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                        View Plans
-                    </Link>
+                 
                 </div>
-                {sessionId && (
+                {(sessionId || orderId) && (
                     <p className="text-xs text-gray-500 mt-4">
-                        Session ID: {sessionId}
+                        {sessionId ? `Session ID: ${sessionId}` : `Order ID: ${orderId}`}
                     </p>
                 )}
             </div>
